@@ -39,7 +39,6 @@ export default function Home() {
   });
   const [error, setError] = useState<string | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const [showIntroModal, setShowIntroModal] = useState(false); // State for modal visibility
   const models = [
     { id: 'openai/gpt-4o', name: 'gpt-4o' },
     { id: 'openai/gpt-4o-mini', name: 'gpt-4o-mini' },
@@ -49,25 +48,6 @@ export default function Home() {
   ];
 
   const { newConversationMessage, setNewConversationMessage, setNewConversationId } = useNewConversation();
-
-  // Check localStorage on mount to decide if modal should show
-  useEffect(() => {
-    // Ensure localStorage is accessed only on the client side
-    if (typeof window !== 'undefined' && localStorage.getItem('hasSeenIntroModal') !== 'true') {
-    // Temporarily always show modal for development
-    // if (typeof window !== 'undefined') {
-      setShowIntroModal(true);
-    }
-    messageInputRef.current?.focus();
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  const handleCloseModal = () => {
-    setShowIntroModal(false);
-    // Ensure localStorage is accessed only on the client side
-    if (typeof window !== 'undefined') {
-       localStorage.setItem('hasSeenIntroModal', 'true');
-    }
-  };
 
   // Get the current provider from the selected model
   const currentProvider = selectedModel.split('/')[0] as keyof typeof providerKeys;
@@ -100,13 +80,7 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen flex flex-col relative items-center justify-center">
-      <AnimatePresence>
-        {showIntroModal && (
-          <IntroductionModal isOpen={showIntroModal} onClose={handleCloseModal} />
-        )}
-      </AnimatePresence>
 
-      {/* Placeholder for message area - could add suggestions or instructions */}
       <div className="overflow-y-auto px-4 pt-6 flex items-center justify-center">
          <div className="text-center">
              <h2 className="text-xl font-medium text-sage-12">What's on your mind?</h2>
