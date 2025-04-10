@@ -35,8 +35,7 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user, profile } = useAuth();
-  const { db } = useDatabase();
+  const { user, profile, db } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const pathname = usePathname();
   const { createConversationAndRedirect } = useCreateConversation();

@@ -17,6 +17,7 @@ interface AuthContextType {
   profile: any | null;
   isLoading: boolean;
   error: Error | null;
+  db: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Render children if user is authenticated, otherwise render Homepage component
   return (
-    <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile }}>
+    <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile, db: db }}>
       {user ? children : <Homepage db={db} googleClientId={GOOGLE_CLIENT_ID} googleClientName={GOOGLE_CLIENT_NAME} />}
     </AuthContext.Provider>
   );
