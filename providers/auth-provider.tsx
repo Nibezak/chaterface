@@ -1,36 +1,93 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { init, id } from '@instantdb/react';
+import { Homepage } from '../components/Homepage';
+import Pricing from '@/components/Pricing';
+
+// TODO: Replace with your actual Instant App ID
+const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID || '';
+
+const db = init({ appId: APP_ID });
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_NAME = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_NAME || '';
 
 interface AuthContextType {
-  sessionId: string | null;
-  initializeSession: () => void;
+  user: any | null; // Consider defining a more specific user type
+  profile: any | null;
+  isLoading: boolean;
+  error: Error | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [sessionId, setSessionId] = useState<string | null>(null);
-
-  const initializeSession = () => {
-    let currentSessionId = Cookies.get('sessionId');
-    console.log('Current session ID from cookies:', currentSessionId);
-    if (!currentSessionId) {
-      currentSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
-      console.log('Creating new session ID:', currentSessionId);
-      Cookies.set('sessionId', currentSessionId, { expires: 365 }); // Cookie expires in 1 year
-    }
-    setSessionId(currentSessionId);
-  };
+  const { isLoading, user, error } = db.useAuth();
+  const [profile, setProfile] = useState<any | null>(null);
 
   useEffect(() => {
-    initializeSession();
-  }, []);
+    const ensureProfile = async () => {
+      if (user) {
+        const profile = await db.queryOnce({
+          userProfiles: {
+            $: {
+              where: {
+                'user.id': user.id
+              }
+            }
+          }
+        }).then((data) => {
+          return data.data.userProfiles[0];
+        })
 
+        if (!profile) {
+          const profileId = id()
+          await db.transact(db.tx.userProfiles[profileId].update({
+            credits: 0
+          }).link({user: user?.id}))
+        }
+      }
+    };
+    ensureProfile();
+  }, [user]);
+
+
+  const { data: profileData, isLoading: profileIsLoading, error: profileError } = db.useQuery({
+    userProfiles: {
+      $: {
+        where: { 'user.id': user?.id ?? '' }
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (profileData) {
+      setProfile(profileData.userProfiles[0])
+    }
+  }, [profileData])
+
+  if (isLoading) {
+    return <div>Loading authentication state...</div>;
+  }
+  if (error) {
+    return <div>Authentication Error: {error.message}</div>;
+  }
+
+  if (profile && profile.credits == 0) {
+    return(
+      <div className='flex flex-col items-center justify-center h-screen'>
+        <div className='text-lg font-medium text-sage-12'>Looks like you don't have any credits</div>
+        <div className='text-sm text-sage-11'>Choose a plan that works for you</div>
+        <Pricing userId={user?.id || ''} />
+      </div>
+    )
+  }
+
+  // Render children if user is authenticated, otherwise render Homepage component
   return (
-    <AuthContext.Provider value={{ sessionId, initializeSession }}>
-      {children}
+    <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile }}>
+      {user ? children : <Homepage db={db} googleClientId={GOOGLE_CLIENT_ID} googleClientName={GOOGLE_CLIENT_NAME} />}
     </AuthContext.Provider>
   );
 }
@@ -40,5 +97,6 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  // Return the whole context for flexibility, including user, isLoading, error
   return context;
 } 

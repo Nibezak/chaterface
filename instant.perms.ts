@@ -5,18 +5,18 @@ import type { InstantRules } from "@instantdb/react";
 const rules = {
   conversations: {
     allow: {
-      view: "data.sessionId == ruleParams.sessionId",
+      view: "data.user.id == auth.id",
       create: "true",
-      update: "data.sessionId == ruleParams.sessionId",
-      delete: "data.sessionId == ruleParams.sessionId",
+      update: "data.user.id == auth.id",
+      delete: "data.user.id == auth.id",
     },
   },
   messages: {
     allow: {
-      view: "data.ref('conversation.sessionId') == ruleParams.sessionId",
+      view: "data.ref('conversation.user.id') == auth.id",
       create: "true",
-      update: "data.ref('conversation.sessionId') == ruleParams.sessionId",
-      delete: "data.ref('conversation.sessionId') == ruleParams.sessionId",
+      update: "data.ref('conversation.user.id') == auth.id",
+      delete: "data.ref('conversation.user.id') == auth.id",
     },
   },
   $files: {

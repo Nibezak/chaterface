@@ -26,10 +26,10 @@ export default function Home() {
   const { db } = useDatabase();
   const { providerKeys } = useKey();
   const router = useRouter();
+  const { user } = useAuth();
   const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false); // Changed from isStreaming for clarity
   const [input, setInput] = useState<string>('');
-  const { sessionId } = useAuth();
   const [selectedModel, setSelectedModel] = useState(() => {
     // Default model selection logic based on available keys
     if (providerKeys.openai) return 'openai/gpt-4o';
@@ -86,11 +86,10 @@ export default function Home() {
     setNewConversationId(generatedNewConversationId);
 
     // create conversation
-    await db.transact(db.tx.conversations[generatedNewConversationId].ruleParams({ sessionId }).update({
+    await db.transact(db.tx.conversations[generatedNewConversationId].update({
       createdAt: DateTime.now().toISO(),
       name: content.slice(0, 20).trim(),
-      sessionId: sessionId as string
-    }));
+    }).link({user: user?.id}));
 
     router.push(`/conversations/${generatedNewConversationId}`);
   }

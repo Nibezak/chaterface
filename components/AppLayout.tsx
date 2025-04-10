@@ -2,7 +2,7 @@
 
 import Button from "@/components/button";
 import Logo from "@/components/logo";
-import { Plus, Gear, MoonStars, Sun, ArrowRight } from "@phosphor-icons/react";
+import { Plus, Gear, MoonStars, Sun, ArrowRight, SignOut } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider"; // Adjusted path
 import { useDatabase } from "@/providers/database-provider"; // Adjusted path
 import { useEffect, useState } from "react";
@@ -35,7 +35,7 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { sessionId } = useAuth();
+  const { user, profile } = useAuth();
   const { db } = useDatabase();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const pathname = usePathname();
@@ -49,12 +49,12 @@ export default function AppLayout({
     conversations: {
       $: {
         where: {
-          sessionId: sessionId ?? '',
+          'user.id': user?.id ?? '',
         },
         order: { createdAt: "desc" }
       },
     },
-  }, { ruleParams: { sessionId: sessionId ?? '' } });
+  });
 
   useEffect(() => {
     if (data?.conversations) {
@@ -79,50 +79,38 @@ export default function AppLayout({
     };
   }, [createConversationAndRedirect]);
 
-  // --- Theme State ---
-  // Initialize theme, default to 'light'. We'll check cookie client-side.
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const setTheme = (theme: string) => {
+    db.transact(db.tx.userProfiles[profile?.id].update({ theme: theme }));
+  };
 
-  // Effect to read theme from cookie on component mount (client-side only)
-  useEffect(() => {
-    const savedTheme = getCookie('theme');
-    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      setTheme(savedTheme);
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  // Function to toggle theme
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    // Set cookie to expire in 1 year
-    document.cookie = `theme=${newTheme};path=/;max-age=31536000;SameSite=Lax`;
+  const signOut = () => {
+    db.auth.signOut();
   };
   // --- End Theme State ---
 
   return (
-    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-2 dark:bg-sage-1 ${theme === 'dark' ? 'dark' : ''}`}>
+    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-2 dark:bg-sage-1 ${profile?.theme === 'dark' ? 'dark' : ''}`}>
       {/* Sidebar */}
       <div className="flex flex-col p-2 overflow-y-auto items-start w-full max-w-64">
         <div className="flex flex-row gap-2 mx-2 justify-between w-full items-center">
-          <Logo style="small" className="my-2 ml-1" color={theme === 'dark' ? 'white' : 'black'}/>
+          <Logo style="small" className="my-2 ml-1" color={profile?.theme === 'dark' ? 'white' : 'black'}/>
           
           <div className="flex flex-row gap-1">
             <button
-              onClick={toggleTheme}
+              onClick={() => setTheme(profile?.theme === 'dark' ? 'light' : 'dark')}
               className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+              aria-label={`Switch to ${profile?.theme === 'light' ? 'dark' : 'light'} theme`}
             >
-              {theme === 'light' ? (
+              {profile?.theme === 'light' ? (
                   <MoonStars size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
               ) : (
                   <Sun size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
               )}
             </button>
 
-            <Link href="/settings/keys" className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300">
-              <Gear size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-            </Link>
+            <button onClick={() => signOut()} className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300">
+              <SignOut size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+            </button>
           </div>
         </div>
         <Button onClick={createConversationAndRedirect} size="small" className="mt-2 w-full bg-sage-3 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-6 dark:border-sage-6" icon={<Plus size={16} weight="bold" />}>New Conversation</Button>

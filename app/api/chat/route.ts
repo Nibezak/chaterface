@@ -1,7 +1,7 @@
 import { streamText, CoreMessage } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,8 @@ export async function POST(req: Request) {
             headers: { 'Content-Type': 'application/json' }
         });
     }
-    const apiKey = authHeader.substring(7); // Remove "Bearer " prefix
+
+    const token = authHeader.substring(7);
 
     // Get messages, model, and conversationId from the body
     const { messages, model }: { messages: CoreMessage[], model: string } = await req.json();
@@ -32,21 +33,17 @@ export async function POST(req: Request) {
 
     console.log("provider", provider);
 
-    // Use the extracted apiKey
     switch (provider) {
       case 'openai':
-        const openaiClient = createOpenAI({ apiKey }); // Use extracted key
-        result = await streamText({ model: openaiClient(modelId), messages: messages });
+        result = await streamText({ model: openai(modelId), messages: messages });
         return result.toDataStreamResponse();
 
       case 'anthropic':
-        const anthropicClient = createAnthropic({ apiKey }); // Use extracted key
-        result = await streamText({ model: anthropicClient(modelId), messages: messages });
+        result = await streamText({ model: anthropic(modelId), messages: messages });
         return result.toDataStreamResponse();
 
       case 'google':
-        const googleClient = createGoogleGenerativeAI({ apiKey }); // Use extracted key
-        result = await streamText({ model: googleClient(modelId), messages: messages });
+        result = await streamText({ model: google(modelId), messages: messages });
         return result.toDataStreamResponse();
 
       default:

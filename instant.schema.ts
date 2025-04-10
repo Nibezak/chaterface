@@ -11,10 +11,15 @@ const _schema = i.schema({
     $users: i.entity({
       email: i.string().unique().indexed(),
     }),
+    userProfiles: i.entity({
+      credits: i.number(),
+      stripeCustomerId: i.string(),
+      theme: i.string(),
+      stripeDetails: i.json(),
+    }),
     conversations: i.entity({
       name: i.string(),
       createdAt: i.date().indexed(),
-      sessionId: i.string().indexed(),
     }),
     messages: i.entity({
       role: i.string(),
@@ -27,6 +32,14 @@ const _schema = i.schema({
     conversationMessages: {
       forward: { on: "messages", has: "one", label: "conversation" },
       reverse: { on: "conversations", has: "many", label: "messages" }
+    },
+    conversationUser: {
+      forward: { on: "conversations", has: "one", label: "user" },
+      reverse: { on: "$users", has: "many", label: "conversations" }
+    },
+    userProfile: {
+      forward: { on: "userProfiles", has: "one", label: "user" },
+      reverse: { on: "$users", has: "one", label: "profile" },
     },
   },
   rooms: {},

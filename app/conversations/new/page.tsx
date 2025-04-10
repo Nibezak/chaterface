@@ -8,22 +8,21 @@ import { id } from "@instantdb/react";
 import { DateTime } from "luxon";
 
 export default function NewConversation() {
-  const { sessionId } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { db } = useDatabase();
   useEffect(() => {
-    if (sessionId) {
+    if (user) {
       createConversation();
     }
-  }, [sessionId]);
+  }, [user]);
 
   const createConversation = async () => {
     const conversationId = id();
     const conversation = await db.transact(db.tx.conversations[conversationId].update({
       name: 'New Conversation',
       createdAt: DateTime.now().toISO(),
-      sessionId: sessionId ?? '',
-    }));
+    }).link({user: user.id}));
     router.replace(`/conversations/${conversationId}`);
   };
 

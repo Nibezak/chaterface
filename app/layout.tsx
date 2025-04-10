@@ -7,7 +7,6 @@ import { KeyProvider } from '../providers/key-provider';
 import AppLayout from "@/components/AppLayout";
 import { NewConversationProvider } from "../providers/new-conversation-provider";
 import { PostHogProvider } from "@/components/PostHogProvider";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-sage-1 font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-[#101211]`}
       >
         <PostHogProvider>
           <DatabaseProvider>

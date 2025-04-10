@@ -5,7 +5,7 @@ import { useDatabase } from "../../providers/database-provider";
 import { useAuth } from "../../providers/auth-provider";
 
 export const useCreateConversation = () => {
-  const { sessionId } = useAuth();
+  const { user } = useAuth();
   const { db } = useDatabase();
   const router = useRouter();
 
@@ -14,8 +14,7 @@ export const useCreateConversation = () => {
     const conversation = await db.transact(db.tx.conversations[conversationId].update({
       name: DateTime.now().toFormat('MMM d, yyyy, h:mm a'),
       createdAt: DateTime.now().toISO(),
-      sessionId: sessionId ?? '',
-    }));
+    }).link({user: user?.id}));
     router.replace(`/conversations/${conversationId}`);
   };
 
