@@ -14,8 +14,6 @@ export async function POST(req: Request) {
         });
     }
 
-    const token = authHeader.substring(7);
-
     // Get messages, model, and conversationId from the body
     const { messages, model }: { messages: CoreMessage[], model: string } = await req.json();
 
