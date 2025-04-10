@@ -5,7 +5,6 @@ import { init, id } from '@instantdb/react';
 import { Homepage } from '../components/Homepage';
 import Pricing from '@/components/Pricing';
 
-// TODO: Replace with your actual Instant App ID
 const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID || '';
 
 const db = init({ appId: APP_ID });
