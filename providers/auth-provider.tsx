@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (profile && profile.credits == 0) {
     return(
-      <div className='flex flex-col items-center justify-center h-screen'>
+      <div className='flex flex-col items-center justify-center h-screen dark'>
         <div className='text-lg font-medium text-sage-12'>Looks like you don't have any credits</div>
         <div className='text-sm text-sage-11'>Choose a plan that works for you</div>
         <Pricing userId={user?.id || ''} />
