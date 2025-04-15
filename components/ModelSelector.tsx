@@ -12,7 +12,7 @@ import {
 } from '@floating-ui/react';
 import { models } from "@/constants/models";
 import { motion } from "motion/react";
-import { CaretDown } from "@phosphor-icons/react";
+import { CaretDown, Sparkle } from "@phosphor-icons/react";
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -96,13 +96,18 @@ export default function ModelSelector({
                     closed: { opacity: 0, y: -10 }
                   }}
                 >
-                  <div className="flex flex-col">
+                  <div className="flex flex-row gap-2">
                     <p className="text-xs font-medium">
                       {model.name}
                     </p>
-                    {/* <p className="text-xs text-sage-10">
-                      {model.description}
-                    </p> */}
+                    {model.isNew && (
+                      <div className="flex flex-row items-center gap-1 rounded-full">
+                        <Sparkle size={12} weight="fill" className="text-sky-10" />
+                        <p className="text-[11px] text-sky-11 dark:text-sky-5 font-medium">
+                          New
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-row gap-4 ml-auto">
