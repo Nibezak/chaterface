@@ -10,7 +10,7 @@ import { useChat } from '@ai-sdk/react'
 import { DateTime } from "luxon";
 import ChatInput from "@/components/ChatInput";
 import MessageList from "@/components/message-list";
-import NewMessageInput from "@/components/new-message-input";
+import NewMessageInput from "@/components/NewMessageInput";
 import { UIMessage } from "ai";
 import { useNewConversation } from "@/providers/new-conversation-provider";
 import { models } from "@/constants/models";
@@ -136,7 +136,16 @@ export default function ConversationPage() {
         <MessageList messages={messages} messagesOnDB={data?.conversations[0]?.messages ?? []} />
       </div>
 
-      <NewMessageInput input={input} handleInputChange={handleInputChange} createMessage={createMessage} selectedModel={selectedModel} setSelectedModel={setSelectedModel} isProcessing={isProcessing} errorMessage={errorMessage} />
+      <NewMessageInput 
+        input={input} 
+        handleInputChange={handleInputChange} 
+        createMessage={createMessage} 
+        selectedModel={selectedModel} 
+        setSelectedModel={setSelectedModel} 
+        isProcessing={isProcessing} 
+        errorMessage={errorMessage} 
+        setInput={setInput}
+      />
     </div>
   );
 }

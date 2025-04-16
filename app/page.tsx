@@ -13,7 +13,7 @@ import { Lora } from "next/font/google";
 import IntroductionModal from "@/components/IntroductionModal";
 import { AnimatePresence } from "motion/react";
 import ChatInput from "@/components/ChatInput";
-import NewMessageInput from "@/components/new-message-input";
+import NewMessageInput from "@/components/NewMessageInput";
 import { useNewConversation } from "@/providers/new-conversation-provider";
 import { useChat } from "@ai-sdk/react";
 import { useAuth } from "@/providers/auth-provider";
@@ -89,7 +89,7 @@ export default function Home() {
       </div>
 
       
-      <NewMessageInput input={input} handleInputChange={handleInputChange} createMessage={createMessage} selectedModel={selectedModel} setSelectedModel={setSelectedModel} onHomepage={true} />
+      <NewMessageInput input={input} handleInputChange={handleInputChange} createMessage={createMessage} selectedModel={selectedModel} setSelectedModel={setSelectedModel} onHomepage={true} setInput={setInput} />
     </div>
   );
 }
