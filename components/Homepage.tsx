@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import Logo from './logo';
 import { Lora, UnifrakturCook } from "next/font/google";
 import Image from 'next/image';
 import { ChatTeardropDots, GithubLogo, Keyboard } from '@phosphor-icons/react';
 import Button from './button';
+import { motion, useInView } from 'motion/react';
+
 interface HomepageProps {
   db: any; // Use any type for db
   googleClientId: string;
@@ -23,6 +25,29 @@ const unifraktur = UnifrakturCook({
   weight: ["700"],
 });
 
+const FeaturePoint = ({ children }: { children: React.ReactNode }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 }); // Only trigger once, when 30% visible
+
+  const variants = {
+    hidden: { opacity: 0.6, y: 20 }, // Start slightly dimmed and down
+    visible: { opacity: 1, y: 0 },    // Fade in and move up
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={variants}
+      transition={{ duration: 0.5 }}
+      className='flex flex-col'
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 export function Homepage({ db, googleClientId, googleClientName }: HomepageProps) {
   const [nonce] = useState(() => typeof window !== 'undefined' ? crypto.randomUUID() : '');
 
@@ -33,93 +58,80 @@ export function Homepage({ db, googleClientId, googleClientName }: HomepageProps
   return (
     <div className='flex flex-col w-full p-2 h-full dark bg-sage-1'>
       <div className="w-full">
-            <div className="flex flex-row items-center w-full max-w-7xl mx-auto pt-8 pb-4 justify-between">
-              <div className="flex flex-row items-center w-max mx-auto gap-4">
-                <Logo color="white"/>
+        <div className="flex flex-row items-center w-full max-w-7xl mx-auto pt-8 pb-4 justify-between">
+          <div className="flex flex-row gap-4">
+            <Logo color="white"/>
+          </div>
+        </div>
+      </div>
+      <div className='flex flex-col w-full max-w-7xl py-40 pt-20 px-4 mx-auto gap-2 font-mono'>
+        <div className='flex flex-col mb-20'>
+          <h1 className={`${lora.className} text-5xl font-medium bg-clip-text text-transparent bg-gradient-to-b pb-2 from-sage-12 to-sage-11 relative z-10`}>Your Interface to Intelligence</h1>
+          
+          <div className='flex flex-row gap-4 mt-4 items-center'>
+            <Button size="small" href="https://github.com/hyperaide/chaterface" target="_blank" className="w-max bg-sage-4 hover:bg-sage-5 text-sage-12 border border-sage-6" icon={<GithubLogo size={14} weight="bold" />}>View on GitHub</Button>
+            <div className='w-max'>
+                <GoogleOAuthProvider clientId={googleClientId}>
+                  <GoogleLogin
+                    theme='filled_black'
+                    logo_alignment='center'
+                    nonce={nonce}
+                    onError={() => {
+                      console.error('Google Login Failed');
+                      alert('Login failed. Please try again.');
+                    }}
+                    onSuccess={async ({ credential }) => {
+                      if (!credential) {
+                        console.error('Google Login Failed: No credential received');
+                        alert('Login failed: No credential received.');
+                        return;
+                      }
+                      try {
+                        await db.auth.signInWithIdToken({
+                          clientName: googleClientName || '',
+                          idToken: credential,
+                          nonce,
+                        });
+                        // Login successful, AuthProvider will re-render with the user
+                      } catch (err: any) {
+                        console.error('InstantDB Sign In Failed:', err);
+                        alert('Uh oh: ' + (err.body?.message || err.message || 'An unknown error occurred during sign in.'));
+                      }
+                    }}
+                  />
+                </GoogleOAuthProvider>
               </div>
-            </div>
-          </div>
-      <div
-          className="flex flex-col w-full relative overflow-hidden rounded-lg max-w-6xl mx-auto"
-          style={{
-            backgroundImage: "url('/f3.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "top",
-          }}
-        >
-          <div className='absolute top-0 left-0 bg-gradient-to-b from-sage-1 via-sage-1/0 to-sage-1 h-full w-full'></div>
-          <div className='absolute top-0 left-0 bg-gradient-to-r from-sage-1 via-sage-1/0 to-sage-1 h-full w-full'></div>
-
-          <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto pb-40 lg:pb-80 pt-20 px-4">
-            <h1 className={`${lora.className} text-5xl font-medium bg-clip-text text-transparent bg-gradient-to-b pb-2 from-sage-12 to-sage-11 relative z-10 text-center`}>Your Interface to Intelligence</h1>
-            <p className={`text-sm text-sage-11 relative z-10`}>Chaterface is an <span className='font-bold text-sage-12'>open source</span> chat interface for large language models.</p>
-
-            <div className='mt-8'>
-              <GoogleOAuthProvider clientId={googleClientId}>
-                <GoogleLogin
-                  theme='filled_black'
-                  logo_alignment='center'
-                  nonce={nonce}
-                  onError={() => {
-                    console.error('Google Login Failed');
-                    alert('Login failed. Please try again.');
-                  }}
-                  onSuccess={async ({ credential }) => {
-                    if (!credential) {
-                      console.error('Google Login Failed: No credential received');
-                      alert('Login failed: No credential received.');
-                      return;
-                    }
-                    try {
-                      await db.auth.signInWithIdToken({
-                        clientName: googleClientName || '',
-                        idToken: credential,
-                        nonce,
-                      });
-                      // Login successful, AuthProvider will re-render with the user
-                    } catch (err: any) {
-                      console.error('InstantDB Sign In Failed:', err);
-                      alert('Uh oh: ' + (err.body?.message || err.message || 'An unknown error occurred during sign in.'));
-                    }
-                  }}
-                />
-              </GoogleOAuthProvider>
-            </div>
           </div>
         </div>
 
-        <div className='flex flex-col max-w-6xl mx-auto'>
-          <p className={`font-mono text-xs text-sage-11 uppercase text-center`}>Built With</p>
-
-          <div className='flex flex-wrap items-center gap-8 mt-8'>
-          
-            <Image src="/logos/vercel.png" alt="InstantDB" width={100} height={100} className='h-5 opacity-50 filter w-auto invert hover:opacity-100 transition-opacity duration-300' />
-            <Image src="/logos/nextjs.png" alt="InstantDB" width={100} height={100} className='h-5 opacity-50 filter w-auto invert hover:opacity-100 transition-opacity duration-300' />
-            <Image src="/instant.svg" alt="InstantDB" width={100} height={100} className='h-5 opacity-50 filter w-auto invert hover:opacity-100 transition-opacity duration-300' />
-          </div>
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>1. One unified interface for many AI models </h1>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto my-16 w-full'>
-          <div className='bg-sage-2 border border-sage-4 rounded-lg p-6 w-full'>
-            <ChatTeardropDots size={18} weight="bold" className="text-orange-500"/>
-            <h2 className='text-sage-12 text-lg font-medium mt-4'>Unified Interface</h2>
-            <p className='text-sage-10 text-xs font-mono'>Access leading models from OpenAI, Anthropic, and Google all in one consistent chat interface.</p>
-          </div>
-
-          <div className='bg-sage-2 border border-sage-4 rounded-lg p-6 w-full'>
-            <GithubLogo size={18} weight="bold" className="text-blue-500"/>
-            <h2 className='text-sage-12 text-lg font-medium mt-4'>Fully Open Source</h2>
-            <p className='text-sage-10 text-xs font-mono'>Chaterface is fully open source. You can inspect, modify, and contribute to the codebase.</p>
-            <Button size="small" href="https://github.com/hyperaide/chaterface" target="_blank" className="mt-4 bg-sage-4 hover:bg-sage-5 text-sage-12 border border-sage-6" icon={<GithubLogo size={14} weight="bold" />}>View on GitHub</Button>
-          </div>
-
-          <div className='bg-sage-2 border border-sage-4 rounded-lg p-6 w-full'>
-            <Keyboard size={18} weight="bold" className="text-cyan-500"/>
-            <h2 className='text-sage-12 text-lg font-medium mt-4'>Keyboard Shortcuts</h2>
-            <p className='text-sage-10 text-xs font-mono'>Chaterface supports keyboard shortcuts for faster navigation.</p>
-          </div>
-          
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>2. Supports models from OpenAI, Anthropic, and Google </h1>
         </div>
+
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>3. $10 a month</h1>
+        </div>
+
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>4. Free forever if you host it yourself</h1>
+        </div>
+
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>5. Fully open source. Built with Next.js and InstantDB</h1>
+        </div>
+
+        <div className='flex flex-col mt-20'>
+          <h1 className={`text-xl font-medium text-sage-11`}>6. Keyboard shortcuts to do things faster</h1>
+        </div>
+
+        <div className='flex flex-col'>
+          <h1 className={`text-xl font-medium text-sage-11`}>7. Use your voice instead of typing</h1>
+        </div>
+      </div>
     </div>
   );
 }
