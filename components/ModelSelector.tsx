@@ -12,7 +12,7 @@ import {
 } from '@floating-ui/react';
 import { models } from "@/constants/models";
 import { motion } from "motion/react";
-import { CaretDown, Sparkle } from "@phosphor-icons/react";
+import { CaretDown, Question, Sparkle } from "@phosphor-icons/react";
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -110,19 +110,21 @@ export default function ModelSelector({
                     )}
                   </div>
 
-                  <div className="flex flex-row gap-4 ml-auto">
-                    <div className="flex flex-col gap-px">
+                  <div className="grid grid-cols-2 gap-4 ml-auto">
+                    
+                    <div className="flex flex-col gap-px justify-center">
                       <p className="text-[10px] uppercase font-mono text-sage-10">
                         Speed
                       </p>
+                    
                       <div className="relative h-1 rounded-full bg-sage-5 w-20 overflow-hidden">
-                        <div 
-                          className={`absolute inset-0 ${(model.speed/300) * 100 > 60 ? 'bg-gradient-to-r from-grass-10 to-grass-8' : 'bg-gradient-to-r from-amber-10 to-amber-8'} rounded-full`} 
-                          style={{ width: `${(model.speed/300) * 100}%` }} 
-                        />
+
+                          <div 
+                            className={`absolute inset-0 ${(model.speed/300) * 100 > 60 ? 'bg-gradient-to-r from-grass-10 to-grass-8' : 'bg-gradient-to-r from-amber-10 to-amber-8'} rounded-full`} 
+                            style={{ width: `${(model.speed/320) * 100}%` }} 
+                          />
                       </div>
-                
-                    </div>
+                    </div>        
 
                     <div className="flex flex-col gap-px">
                       <p className="text-[10px] uppercase font-mono text-sage-10">
@@ -131,7 +133,7 @@ export default function ModelSelector({
                       <div className="relative h-1 rounded-full bg-sage-5 w-20 overflow-hidden">
                         <div 
                           className={`absolute inset-0 ${(model.intelligence/80) * 100 > 60 ? 'bg-gradient-to-r from-grass-10 to-grass-8' : 'bg-gradient-to-r from-amber-10 to-amber-8'} rounded-full`} 
-                          style={{ width: `${(model.intelligence/80) * 100}%` }} 
+                          style={{ width: `${(model.intelligence/90) * 100}%` }} 
                         />
                       </div>
                 

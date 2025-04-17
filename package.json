@@ -20,7 +20,7 @@
     "@radix-ui/colors": "^3.0.0",
     "@react-oauth/google": "^0.12.1",
     "@types/js-cookie": "^3.0.6",
-    "ai": "^4.2.6",
+    "ai": "^4.3.9",
     "clsx": "^2.1.1",
     "elevenlabs": "^1.56.1",
     "hotkeys-js": "^3.13.9",

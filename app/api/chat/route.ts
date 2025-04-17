@@ -29,23 +29,38 @@ export async function POST(req: Request) {
 
     let result;
 
-    console.log("provider", provider);
-
     switch (provider) {
       case 'openai':
-        result = await streamText({ model: openai(modelId), messages: messages });
-        return result.toDataStreamResponse();
+        result = await streamText({ model: openai(modelId), messages: messages, temperature: 1 });
+        return result.toDataStreamResponse(
+          {
+            getErrorMessage: (error) => {
+              return "An error occurred";
+            }
+          }
+        );
 
       case 'anthropic':
-        result = await streamText({ model: anthropic(modelId), messages: messages });
-        return result.toDataStreamResponse();
+        result = await streamText({ model: anthropic(modelId), messages: messages, temperature: 1 });
+        return result.toDataStreamResponse(
+          {
+            getErrorMessage: (error) => {
+              return "An error occurred";
+            }
+          }
+        );
 
       case 'google':
-        result = await streamText({ model: google(modelId), messages: messages });
-        return result.toDataStreamResponse();
+        result = await streamText({ model: google(modelId), messages: messages, temperature: 1 });
+        return result.toDataStreamResponse(
+          {
+            getErrorMessage: (error) => {
+              return "An error occurred";
+            }
+          }
+        );
 
       default:
-        console.error(`Unsupported provider: ${provider}`);
         return new Response(JSON.stringify({ error: `Unsupported provider: ${provider}` }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
@@ -53,7 +68,6 @@ export async function POST(req: Request) {
     }
 
   } catch (error: any) {
-    console.error("Error in chat API route:", error);
     // Handle JSON parsing errors specifically
     if (error instanceof SyntaxError) {
         return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {

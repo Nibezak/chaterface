@@ -94,7 +94,10 @@ export default function ConversationPage() {
       append({
         role: "user",
         content: newConversationMessage,
-          parts: []
+        parts: [{
+          type: "text",
+          text: newConversationMessage
+        }]
         });
       }
     }
@@ -126,7 +129,10 @@ export default function ConversationPage() {
     append({
       role: "user",
       content: content,
-      parts: []
+      parts: [{
+        type: "text",
+        text: content
+      }]
     });
   }
 
