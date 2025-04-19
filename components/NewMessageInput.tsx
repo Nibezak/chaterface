@@ -115,12 +115,11 @@ export default function NewMessageInput({
           <Warning size={18} weight="bold" className="text-red-9 mt-1" />
           <div className="flex flex-col gap-2">
             <p className="text-red-11 dark:text-sage-12 mt-2 font-mono text-xs">Error: {errorMessage}</p>
-            <p className="text-red-10 dark:text-sage-12 font-mono text-xs">Make sure you have correct API keys set in the settings page.</p>
           </div>
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.div className="mx-auto max-w-xl bg-white dark:bg-sage-3 shadow-xl border border-sage-3 dark:border-sage-5 rounded-xl 2-50 overflow-hidden"
+      <motion.div className="mx-auto max-w-xl bg-sage-1 dark:bg-sage-3 border border-sage-3 dark:border-sage-5 rounded-xl 2-50 overflow-hidden"
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -161,11 +160,6 @@ export default function NewMessageInput({
               )}
               <p className="text-sm">{isRecording ? "Stop" : "Speak"}</p>
               
-              {/* <div className="flex items-center gap-px">
-                <div className="flex items-center gap-1 bg-sage-4 dark:bg-sage-6 p-px rounded-xs px-1">
-                  <p className="text-[10px] font-mono font-medium">V</p>
-                </div>
-              </div> */}
             </button>
             <button
               type="submit"

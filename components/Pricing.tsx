@@ -1,5 +1,5 @@
 import { CreditCard, GithubLogo } from "@phosphor-icons/react";
-import Button from "./button";
+import Button from "./Button";
 
 export default function Pricing({userId}: {userId: string}) {
   return (

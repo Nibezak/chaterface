@@ -1,9 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { init, id } from '@instantdb/react';
+import { init, id, i } from '@instantdb/react';
 import { Homepage } from '../components/Homepage';
 import Pricing from '@/components/Pricing';
+import Cookies from 'js-cookie';
 
 const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID || '';
 
@@ -18,6 +19,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: Error | null;
   db: any;
+  sessionId: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { isLoading, user, error } = db.useAuth();
   const [profile, setProfile] = useState<any | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     const ensureProfile = async () => {
@@ -47,6 +50,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             credits: 0
           }).link({user: user?.id}))
         }
+      }else{
+        // Check if a session ID cookie exists
+        let currentSessionId = Cookies.get('sessionId');
+        if (!currentSessionId) {
+          // If no cookie, generate a new session ID
+          currentSessionId = id();
+          // Set the cookie, expires in 7 days (adjust as needed)
+          Cookies.set('sessionId', currentSessionId, { expires: 7 });
+        }
+        // Set the session ID in state
+        setSessionId(currentSessionId);
       }
     };
     ensureProfile();
@@ -74,20 +88,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return <div>Authentication Error: {error.message}</div>;
   }
 
-  if (profile && profile.credits == 0) {
-    return(
-      <div className='flex flex-col items-center justify-center h-screen dark'>
-        <div className='text-lg font-medium text-sage-12'>Looks like you don't have any credits</div>
-        <div className='text-sm text-sage-11'>Choose a plan that works for you</div>
-        <Pricing userId={user?.id || ''} />
-      </div>
-    )
-  }
-
   // Render children if user is authenticated, otherwise render Homepage component
   return (
-    <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile, db: db }}>
-      {user ? children : <Homepage db={db} googleClientId={GOOGLE_CLIENT_ID} googleClientName={GOOGLE_CLIENT_NAME} />}
+    // <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile, db: db }}>
+    //   {user ? children : <Homepage db={db} googleClientId={GOOGLE_CLIENT_ID} googleClientName={GOOGLE_CLIENT_NAME} />}
+    // </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, isLoading, error: error || null, profile: profile, db: db, sessionId: sessionId }}>
+      {children}
     </AuthContext.Provider>
   );
 }

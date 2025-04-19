@@ -2,6 +2,7 @@ import { streamText, CoreMessage } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
+import { db } from '@/lib/instant-admin';
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +13,16 @@ export async function POST(req: Request) {
             status: 401,
             headers: { 'Content-Type': 'application/json' }
         });
+    }
+
+    const sessionId = req.headers.get('X-Session-Id');
+    const token = req.headers.get('X-Token');
+
+    if(await checkUsage(sessionId, token)) {
+      return new Response(JSON.stringify({ error: 'Usage limit reached' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Get messages, model, and conversationId from the body
@@ -83,3 +94,44 @@ export async function POST(req: Request) {
     });
   }
 } 
+
+
+async function checkUsage(sessionId?: string | null, token?: string | null) {
+  if (!sessionId && !token) {
+    return true;
+  }
+
+  let user;
+
+  if(token) {
+    user = await db.auth.verifyToken(token);
+    if(!user) {
+      return true;
+    }
+  }
+
+  const data = await db.query({
+    messages: {
+      $: {
+        where: {
+          or: [
+            { 'conversation.sessionId': sessionId ?? '' },
+            { 'conversation.user.id': user?.id ?? '' }
+          ]
+        }
+      }
+    }
+  });
+
+  // if user is logged in, check if they have used 200 messages
+  if(user && data.messages.length >= 200) {
+    return true;
+  }
+
+  // if user is not logged in, check if they have used 100 messages
+  if(!user && data.messages.length >= 100) {
+    return true;
+  }
+
+  return false;
+}

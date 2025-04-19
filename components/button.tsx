@@ -16,7 +16,7 @@ interface ButtonProps {
 
 export default function Button({ onClick, href, children, className = '', icon, iconPosition = 'left', size = 'medium', disabled = false, target = '' }: ButtonProps) {
   const sizeClasses = {
-    small: 'px-4 py-2 text-xs rounded-md',
+    small: 'px-2 py-1 text-xs rounded-md',
     medium: 'px-4 py-2 text-sm',
     large: 'px-6 py-3 text-base'
   };

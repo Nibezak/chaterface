@@ -1,8 +1,8 @@
 'use client';
 
-import Button from "@/components/button";
+import Button from "@/components/Button";
 import Logo from "@/components/logo";
-import { Plus, Gear, MoonStars, Sun, ArrowRight, SignOut } from "@phosphor-icons/react";
+import { Plus, Gear, MoonStars, Sun, ArrowRight, SignOut, User, SignIn, Diamond } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider"; // Adjusted path
 import { useDatabase } from "@/providers/database-provider"; // Adjusted path
 import { useEffect, useState } from "react";
@@ -35,8 +35,9 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user, profile, db } = useAuth();
+  const { user, profile, db, sessionId } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messageCount, setMessageCount] = useState<number>(0);
   const pathname = usePathname();
   const { createConversationAndRedirect } = useCreateConversation();
 
@@ -48,17 +49,34 @@ export default function AppLayout({
     conversations: {
       $: {
         where: {
-          'user.id': user?.id ?? '',
+          or: [{ 'user.id': user?.id ?? '' }, { sessionId: sessionId ?? '' }],
+
         },
         order: { createdAt: "desc" }
       },
     },
+    messages: {
+      $: {
+        where: {
+          role: 'assistant',
+          or: [{ 'conversation.sessionId': sessionId ?? '' }, { 'conversation.user.id': user?.id ?? '' }],
+        }
+      }
+    }
+  }, {
+    ruleParams: {
+      sessionId: sessionId ?? ''
+    }
   });
 
   useEffect(() => {
     if (data?.conversations) {
       // No need to map createdAt to Date, keep as ISO string from DB
       setConversations(data.conversations as Conversation[]);
+    }
+
+    if (data?.messages) {
+      setMessageCount(data.messages.length);
     }
   }, [data]);
 
@@ -85,13 +103,18 @@ export default function AppLayout({
   const signOut = () => {
     db.auth.signOut();
   };
-  // --- End Theme State ---
+  
+  // Create the authorization URL:
+  const url = db.auth.createAuthorizationURL({
+    clientName: "google-web",
+    redirectURL: window.location.href,
+  });
 
   return (
     <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-2 dark:bg-sage-1 ${profile?.theme === 'dark' ? 'dark' : ''}`}>
       {/* Sidebar */}
-      <div className="flex flex-col p-2 overflow-y-auto items-start w-full max-w-64">
-        <div className="flex flex-row gap-2 mx-2 justify-between w-full items-center">
+      <div className="flex flex-col p-2 overflow-y-auto items-start w-full max-w-64 overflow-hidden">
+        <div className="flex flex-row gap-2 justify-between w-full items-center">
           <Logo style="small" className="my-2 ml-1" color={profile?.theme === 'dark' ? 'white' : 'black'}/>
           
           <div className="flex flex-row gap-1">
@@ -113,6 +136,36 @@ export default function AppLayout({
           </div>
         </div>
         <Button onClick={createConversationAndRedirect} size="small" className="mt-2 w-full bg-sage-3 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-6 dark:border-sage-6" icon={<Plus size={16} weight="bold" />}>New Conversation</Button>
+
+        <div className="flex flex-col border bg-sage-1 dark:bg-sage-3 border-sage-4 dark:border-sage-5 rounded-md p-2 w-full mt-2">
+          <div className="flex flex-row gap-2 justify-between items-center" >
+            <p className="text-[10px] font-mono text-sage-11 dark:text-sage-11 uppercase">Usage </p>
+            <p className="text-[10px] font-mono text-sage-11 dark:text-sage-11"> {user ? messageCount + '/200' : messageCount + '/100'} </p>
+          </div>
+          <div className="relative h-1 w-full bg-sage-3 mt-1 dark:bg-sage-5 rounded-full">
+            <div className="h-1 bg-teal-9 rounded-full absolute left-0" style={{ width: `${messageCount }%` }}></div>
+          </div>
+
+          {user ? (
+            <>
+              {/* <p className="text-xs text-sage-11 dark:text-sage-11 mt-4"> Upgrade for higher limits </p>
+              <div className="flex flex-row gap-1 items-center mt-1">
+                <Diamond size={12} weight="bold" className="text-sage-12 group-hover:text-sage-12 transition-colors duration-300" />
+                <Link href={'/plans'} className="text-xs text-sage-12 font-medium">Upgrade Plan</Link>
+              </div> */}
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-sage-11 dark:text-sage-11 mt-4"> Create Account for higher limits </p>
+              <div className="flex flex-row gap-1 items-center mt-1">
+                <SignIn size={12} weight="bold" className="text-sage-12 group-hover:text-sage-12 transition-colors duration-300" />
+                <Link href={url} className="text-xs text-sage-12 font-medium">Sign in with Google</Link>
+              </div>
+            </>
+          )}
+
+          {/* <Button onClick={() => router.push('/pricing')} size="small" className="mt-1 w-full bg-sage-2 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-4 dark:border-sage-6" icon={<User size={16} weight="bold" />}>Sign In</Button> */}
+        </div>
 
         {/* Conversation List */}
         <div className="gap-2 flex flex-col w-full mt-4 flex-1 overflow-y-auto">
@@ -147,7 +200,7 @@ export default function AppLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className="w-full bg-white dark:bg-sage-2 mx-2 my-2 rounded-lg overflow-hidden border border-sage-4 dark:border-sage-5">
+      <div className="w-full bg-white dark:bg-sage-2 mr-2 my-2 rounded-lg overflow-hidden border border-sage-4 dark:border-sage-5">
         {children}
       </div>
     </div>

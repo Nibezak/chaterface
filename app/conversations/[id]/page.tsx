@@ -9,7 +9,7 @@ import { AppSchema } from "@/instant.schema";
 import { useChat } from '@ai-sdk/react'
 import { DateTime } from "luxon";
 import ChatInput from "@/components/ChatInput";
-import MessageList from "@/components/message-list";
+import MessageList from "@/components/MessageList";
 import NewMessageInput from "@/components/NewMessageInput";
 import { UIMessage } from "ai";
 import { useNewConversation } from "@/providers/new-conversation-provider";
@@ -24,7 +24,7 @@ export default function ConversationPage() {
   const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
   const { db } = useDatabase();
   const { getProviderKey } = useKey();
-  const { user } = useAuth();
+  const { user, sessionId } = useAuth();
   const [selectedModel, setSelectedModel] = useState<string>(models[0].id);
   const [messagesForChat, setMessagesForChat] = useState<UIMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -37,20 +37,18 @@ export default function ConversationPage() {
       },
       messages: {}
     }
-  });
-
-  useEffect(() => {
-    if(data && !data?.conversations[0]){
-      router.push('/');
+  }, {
+    ruleParams: {
+      sessionId: sessionId ?? ''
     }
-  }, [data]);
-
-  const { newConversationMessage, setNewConversationMessage, setNewConversationId, newConversationId } = useNewConversation();
+  });
 
   const { messages, input, handleInputChange, append, setInput, status } = useChat({
     api: '/api/chat',
     headers: {
-      'Authorization': `Bearer ${getProviderKey(selectedModel)}`
+      'Authorization': `Bearer ${getProviderKey(selectedModel)}`,
+      'X-Session-Id': sessionId ?? '',
+      'X-Token': user?.refreshToken ?? ''
     },
     body: {
       model: selectedModel
@@ -62,14 +60,14 @@ export default function ConversationPage() {
     onFinish: async (message) => {
       setIsProcessing(false);
       const aiMessageId = newInstantId();
-      await db.transact(db.tx.messages[aiMessageId].update({
+      await db.transact(db.tx.messages[aiMessageId].ruleParams({ sessionId: sessionId ?? '' }).update({
         content: message.content,
         role: "assistant",
         createdAt: DateTime.now().toISO(),
         model: selectedModel
       }).link({ conversation: id as string }));
     },
-    initialMessages: (data?.conversations[0]?.messages.length === 1) ? [] : data?.conversations[0]?.messages.map((message) => ({
+    initialMessages: data?.conversations[0]?.messages.map((message) => ({
       role: message.role as "data" | "system" | "user" | "assistant",
       content: message.content,
       id: message.id,
@@ -77,35 +75,9 @@ export default function ConversationPage() {
     })) ?? []
   });
 
-  useEffect(() => {
-    async function createInitialMessage(){
-      if(data?.conversations[0]?.messages.length === 0 && newConversationMessage?.trim() && newConversationId === id){
-
-      await db.transact(db.tx.messages[newInstantId()].update({
-        content: newConversationMessage,
-        role: "user",
-        createdAt: DateTime.now().toISO(),
-        model: selectedModel
-      }).link({ conversation: newConversationId ?? "" }));
-
-      setNewConversationMessage("");
-      setNewConversationId("");
-
-      append({
-        role: "user",
-        content: newConversationMessage,
-        parts: [{
-          type: "text",
-          text: newConversationMessage
-        }]
-        });
-      }
-    }
-    createInitialMessage();
-  }, [data]);
-
 
   async function createMessage(content: string) {
+    console.log('createMessage called');
     if (!id) {
       console.error('No conversation ID available');
       return;
@@ -116,7 +88,7 @@ export default function ConversationPage() {
     const newMessageId = newInstantId();
     
     // Create user message
-    await db.transact(db.tx.messages[newMessageId].update({
+    await db.transact(db.tx.messages[newMessageId].ruleParams({ sessionId: sessionId ?? '' }).update({
       content: content,
       createdAt: DateTime.now().toISO(),
       role: "user",
@@ -143,13 +115,13 @@ export default function ConversationPage() {
       </div>
 
       <NewMessageInput 
-        input={input} 
-        handleInputChange={handleInputChange} 
-        createMessage={createMessage} 
-        selectedModel={selectedModel} 
-        setSelectedModel={setSelectedModel} 
-        isProcessing={isProcessing} 
-        errorMessage={errorMessage} 
+        input={input}
+        handleInputChange={handleInputChange}
+        createMessage={createMessage}
+        selectedModel={selectedModel}
+        setSelectedModel={setSelectedModel}
+        isProcessing={isProcessing}
+        errorMessage={errorMessage}
         setInput={setInput}
       />
     </div>
