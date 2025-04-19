@@ -6,7 +6,7 @@ import { useKey } from "@/providers/key-provider";
 import { useRouter } from 'next/navigation';
 import { DateTime } from "luxon";
 import { id, InstaQLEntity } from "@instantdb/react";
-import Button from "@/components/Button";
+import Button from "@/components/button";
 import ApiKeyInput from "@/components/api-key-input";
 import Logo from "@/components/logo";
 import { Lora } from "next/font/google";

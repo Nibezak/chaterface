@@ -1,6 +1,6 @@
 'use client';
 
-import Button from "@/components/Button";
+import Button from "@/components/button";
 import Logo from "@/components/logo";
 import { Plus, Gear, MoonStars, Sun, ArrowRight, SignOut, User, SignIn, Diamond } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider"; // Adjusted path

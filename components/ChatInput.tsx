@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import Button from './Button';
+import Button from './button';
 import { models } from '@/constants/models';
 
 export interface Model {

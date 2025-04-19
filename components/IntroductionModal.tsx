@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Button from '@/components/Button';
+import Button from '@/components/button';
 import Logo from '@/components/logo';
 import { Lora } from "next/font/google";
 import { GithubLogo, ChatTeardropDots, Gear } from "@phosphor-icons/react/dist/ssr";

@@ -6,7 +6,7 @@ import Logo from './logo';
 import { Lora, UnifrakturCook } from "next/font/google";
 import Image from 'next/image';
 import { ChatTeardropDots, GithubLogo, Keyboard } from '@phosphor-icons/react';
-import Button from './Button';
+import Button from './button';
 import { motion, useInView } from 'motion/react';
 
 interface HomepageProps {
