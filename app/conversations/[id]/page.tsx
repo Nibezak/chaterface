@@ -71,7 +71,10 @@ export default function ConversationPage() {
       role: message.role as "data" | "system" | "user" | "assistant",
       content: message.content,
       id: message.id,
-      parts: [],
+      parts: [{
+        type: "text",
+        text: message.content
+      }],
       annotations: [{
         model: message.model
       }]
