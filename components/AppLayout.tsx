@@ -24,7 +24,6 @@ export default function AppLayout({
 }>) {
   const { user, profile, db, sessionId } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [theme, setTheme] = useState<string>(Cookies.get('theme') ?? 'light');
   const [messageCount, setMessageCount] = useState<number>(0);
   const pathname = usePathname();
   const { createConversationAndRedirect } = useCreateConversation();
@@ -87,6 +86,10 @@ export default function AppLayout({
   const signOut = () => {
     db.auth.signOut();
   };
+
+  const setTheme = async (theme: string) => {
+    await db.transact(db.tx.userProfiles[profile?.id].update({ theme: theme }));
+  };
   
   // Create the authorization URL:
   const url = db.auth.createAuthorizationURL({
@@ -95,24 +98,26 @@ export default function AppLayout({
   });
 
   return (
-    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-1 dark:bg-sage-1 ${theme === 'dark' ? 'dark' : ''}`}>
+    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-1 dark:bg-sage-1 ${profile?.theme === 'dark' ? 'dark' : ''}`}>
       {/* Sidebar */}
       <div className="flex flex-col p-2 overflow-y-auto items-start w-full max-w-64 overflow-hidden">
         <div className="flex flex-row gap-2 justify-between w-full items-center">
-          <Logo style="small" className="my-2 ml-1" color={theme === 'dark' ? 'white' : 'black'}/>
+          <Logo style="small" className="my-2 ml-1" color={profile?.theme === 'dark' ? 'white' : 'black'}/>
           
           <div className="flex flex-row gap-1">
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-            >
-              {theme === 'light' ? (
-                  <MoonStars size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-              ) : (
-                  <Sun size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-              )}
-            </button>
+            { profile && (
+              <button
+                onClick={() => setTheme(profile?.theme === 'dark' ? 'light' : 'dark')}
+                className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300"
+                aria-label={`Switch to ${profile?.theme === 'light' ? 'dark' : 'light'} theme`}
+              >
+                {profile?.theme === 'light' ? (
+                    <MoonStars size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+                ) : (
+                    <Sun size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+                )}
+              </button>
+            )}
 
             <button onClick={() => signOut()} className="p-1 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300">
               <SignOut size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
