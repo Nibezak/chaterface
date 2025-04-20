@@ -50,7 +50,7 @@ export async function POST(req: Request) {
               messages: messages,
               temperature: 1,
               onFinish() {
-                dataStream.writeMessageAnnotation({ model: modelId });
+                dataStream.writeMessageAnnotation({ model: model });
               },
             });
             result.mergeIntoDataStream(dataStream);
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
               messages: messages,
               temperature: 1,
               onFinish() {
-                // dataStream.close(); // Removed this line
+                dataStream.writeMessageAnnotation({ model: model });
               },
             });
             result.mergeIntoDataStream(dataStream);
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
               messages: messages,
               temperature: 1,
               onFinish() {
-                // dataStream.close(); // Removed this line
+                dataStream.writeMessageAnnotation({ model: model });
               },
             });
             result.mergeIntoDataStream(dataStream);
