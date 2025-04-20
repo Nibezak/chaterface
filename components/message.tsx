@@ -55,7 +55,7 @@ export default function Message({ message }: { message: UIMessage }) {
 
   return(
     <div className={`${baseClass} ${message.role === "user" ? userClass : aiClass}`}>
-      {modelName && (
+      {message.role === "assistant" && modelName && (
         <div className="text-sm text-sage-11 font-mono font-medium mb-1">
           {String(modelName)} 
         </div>
