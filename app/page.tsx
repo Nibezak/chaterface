@@ -37,13 +37,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { getProviderKey } = useKey();
-  const [selectedModel, setSelectedModel] = useState(() => {
-    // Default model selection logic based on available keys
-    if (providerKeys.openai) return 'openai/gpt-4o';
-    if (providerKeys.anthropic) return 'anthropic/claude-3-5-sonnet';
-    if (providerKeys.google) return 'google/gemini-2.0-flash';
-    return 'openai/gpt-4o'; // Fallback default
-  });
+  const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-4.1-nano');
 
   const [dbMessages, setDbMessages] = useState<Message[]>([]);
 

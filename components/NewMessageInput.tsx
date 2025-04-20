@@ -1,8 +1,6 @@
-import { ArrowRight, CircleNotch, Gear, Microphone, PaperPlaneTilt, Stop, Warning } from "@phosphor-icons/react";
+import { CircleNotch, Microphone, PaperPlaneTilt, Stop, Warning } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "motion/react";
-import { models } from "@/constants/models";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import ModelSelector from "./ModelSelector";
 
 export default function NewMessageInput({ 

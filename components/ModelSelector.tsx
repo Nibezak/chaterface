@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   useFloating, 
   useInteractions,
@@ -13,6 +13,10 @@ import {
 import { models } from "@/constants/models";
 import { motion } from "motion/react";
 import { CaretDown, Question, Sparkle } from "@phosphor-icons/react";
+import { useAuth } from '@/providers/auth-provider';
+import Link from 'next/link';
+import { useModal } from '@/providers/modal-provider';
+import PlansModal from './modals/PlansModal';
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -24,7 +28,19 @@ export default function ModelSelector({
   setSelectedModel 
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [limitedUse, setLimitedUse] = useState<boolean>(false);
   const references = useRef<Array<HTMLElement | null>>([]);
+  const {user} = useAuth();
+  const {showModal} = useModal();
+  useEffect(() => {
+    if(user && user.credits > 0) {
+      setAvailableModels(models);
+    } else {
+      setLimitedUse(true);
+      setAvailableModels(models.filter(model => model.free));
+    }
+  }, [user]);
   
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -78,7 +94,7 @@ export default function ModelSelector({
                 closed: { opacity: 0, y: 10 }
               }}
             >
-              {models.map((model, index) => (
+              {availableModels.map((model, index) => (
                 <motion.button
                   key={model.id}
                   ref={(node) => {
@@ -141,6 +157,17 @@ export default function ModelSelector({
                   </div>
                 </motion.button>
               ))}
+
+              {limitedUse && (
+                <div className="px-3 py-3 text-sm text-sage-11 hover:bg-sage-2 dark:hover:bg-sage-4 transition-colors cursor-pointer" onClick={() => {showModal(<PlansModal />)}}>
+                  <p className="text-sage-12 font-medium text-xs">
+                    Looking for more models?
+                  </p>
+                  <p className="text-sage-11 text-xs">
+                    Upgrade to a paid plan to unlock all models.
+                  </p>
+                </div>
+              )}
             </motion.div>
           </div>
         </FloatingFocusManager>
