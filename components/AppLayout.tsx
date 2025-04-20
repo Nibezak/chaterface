@@ -2,7 +2,7 @@
 
 import Button from "@/components/button";
 import Logo from "@/components/logo";
-import { Plus, Gear, MoonStars, Sun, ArrowRight, SignOut, User, SignIn, Diamond } from "@phosphor-icons/react";
+import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider";
 import { useDatabase } from "@/providers/database-provider";
 import { useEffect, useState } from "react";
@@ -12,7 +12,6 @@ import hotkeys from 'hotkeys-js';
 import { useCreateConversation } from "@/app/utils/conversation"
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity } from "@instantdb/react";
-import Cookies from 'js-cookie';
 
 // Define the expected shape of a conversation based on AppSchema
 type Conversation = InstaQLEntity<AppSchema, "conversations">;
@@ -91,7 +90,6 @@ export default function AppLayout({
     await db.transact(db.tx.userProfiles[profile?.id].update({ theme: theme }));
   };
   
-  // Create the authorization URL:
   const url = db.auth.createAuthorizationURL({
     clientName: "google-web",
     redirectURL: window.location.href,
