@@ -1,4 +1,4 @@
-import { streamText, CoreMessage } from 'ai';
+import { streamText, CoreMessage, createDataStreamResponse } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
@@ -42,34 +42,62 @@ export async function POST(req: Request) {
 
     switch (provider) {
       case 'openai':
-        result = await streamText({ model: openai(modelId), messages: messages, temperature: 1 });
-        return result.toDataStreamResponse(
-          {
-            getErrorMessage: (error) => {
-              return "An error occurred";
-            }
-          }
-        );
+        return createDataStreamResponse({
+          execute: dataStream => {
+            dataStream.writeData({ hello: 'test' });
+            const result = streamText({
+              model: openai(modelId),
+              messages: messages,
+              temperature: 1,
+              onFinish() {
+                dataStream.writeMessageAnnotation({ model: modelId });
+              },
+            });
+            result.mergeIntoDataStream(dataStream);
+          },
+          onError: (error) => {
+            // You might want more specific error handling here
+            return "An error occurred with OpenAI";
+          },
+        });
 
       case 'anthropic':
-        result = await streamText({ model: anthropic(modelId), messages: messages, temperature: 1 });
-        return result.toDataStreamResponse(
-          {
-            getErrorMessage: (error) => {
-              return "An error occurred";
-            }
-          }
-        );
+        return createDataStreamResponse({
+          execute: dataStream => {
+            dataStream.writeData({ hello: 'test' });
+            const result = streamText({
+              model: anthropic(modelId),
+              messages: messages,
+              temperature: 1,
+              onFinish() {
+                // dataStream.close(); // Removed this line
+              },
+            });
+            result.mergeIntoDataStream(dataStream);
+          },
+          onError: (error) => {
+            return "An error occurred with Anthropic";
+          },
+        });
 
       case 'google':
-        result = await streamText({ model: google(modelId), messages: messages, temperature: 1 });
-        return result.toDataStreamResponse(
-          {
-            getErrorMessage: (error) => {
-              return "An error occurred";
-            }
-          }
-        );
+        return createDataStreamResponse({
+          execute: dataStream => {
+            dataStream.writeData({ hello: 'test' });
+            const result = streamText({
+              model: google(modelId),
+              messages: messages,
+              temperature: 1,
+              onFinish() {
+                // dataStream.close(); // Removed this line
+              },
+            });
+            result.mergeIntoDataStream(dataStream);
+          },
+          onError: (error) => {
+            return "An error occurred with Google";
+          },
+        });
 
       default:
         return new Response(JSON.stringify({ error: `Unsupported provider: ${provider}` }), {

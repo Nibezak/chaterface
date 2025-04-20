@@ -22,18 +22,17 @@ const CodeBlock: Components['code'] = ({ node, inline, className, children, ...p
       style={atomDark as any}
       customStyle={{
         borderRadius: "10px",
-      }} // Keep the 'as any' cast for the style prop for now
+      }}
       language={match[1]}
       PreTag="div"
       codeTagProps={{
         className: "font-mono text-sm"
       }}
-      // Do not spread props here; pass only SyntaxHighlighter-specific props if needed
     >
       {String(children).replace(/\n$/, '')}
     </SyntaxHighlighter>
   ) : (
-    // Spread the rest of the props onto the inline code tag
+
     <code className={className} {...props}>
       {children}
     </code>
@@ -47,11 +46,23 @@ export default function Message({ message }: { message: UIMessage }) {
   const userClass = "ml-auto";
   const aiClass = "mr-auto";
 
+  const firstAnnotation = message.annotations?.[0];
+
+  // Check if the first annotation exists, is an object, and has the 'model' property
+  const modelName = typeof firstAnnotation === 'object' && firstAnnotation !== null && 'model' in firstAnnotation
+    ? firstAnnotation.model
+    : null;
+
   return(
     <div className={`${baseClass} ${message.role === "user" ? userClass : aiClass}`}>
+      {modelName && (
+        <div className="text-sm text-sage-11 font-mono font-medium mb-1">
+          {String(modelName)} 
+        </div>
+      )}
       <ReactMarkdown
         children={message.content}
-        components={{ code: CodeBlock }} // Use the defined component
+        components={{ code: CodeBlock }}
       />
     </div>
     );
