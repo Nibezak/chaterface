@@ -139,5 +139,29 @@
 
 /* Updated light theme background color */
 body {
-  background-color: #FDF2E9; /* warm orange-ish white */
+  background-color: #f9dec8; /* warm orange-ish white */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;     /* Firefox */
+}
+
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(28, 40, 64, 0.2); /* adjust using your theme colors */
+  border-radius: 2px;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(28, 40, 64, 0.2) transparent;
 }

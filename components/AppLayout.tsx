@@ -2,10 +2,10 @@
 
 import Button from "@/components/button";
 import Logo from "@/components/logo";
-import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn } from "@phosphor-icons/react";
+import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn, Folder } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider";
 import { useDatabase } from "@/providers/database-provider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import hotkeys from 'hotkeys-js';
@@ -24,6 +24,14 @@ export default function AppLayout({
   const { user, profile, db, sessionId } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messageCount, setMessageCount] = useState<number>(0);
+  // Local theme state for non-logged in users with system default
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
+
   const pathname = usePathname();
   const { createConversationAndRedirect } = useCreateConversation();
 
@@ -64,7 +72,6 @@ export default function AppLayout({
 
   useEffect(() => {
     if (data?.conversations) {
-      // No need to map createdAt to Date, keep as ISO string from DB
       setConversations(data.conversations as Conversation[]);
     }
 
@@ -75,7 +82,6 @@ export default function AppLayout({
 
   // Set up keyboard shortcuts
   useEffect(() => {
-    // Shortcut 'n' to create a new conversation
     hotkeys('n', (event) => {
       if (!(event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement)) {
         event.preventDefault();
@@ -92,26 +98,43 @@ export default function AppLayout({
     db.auth.signOut();
   };
 
-  const setTheme = async (theme: string) => {
-    await db.transact(db.tx.userProfiles[profile?.id].update({ theme: theme }));
+  const setTheme = async (newTheme: string) => {
+    await db.transact(db.tx.userProfiles[profile?.id].update({ theme: newTheme }));
   };
 
-  const url = db.auth.createAuthorizationURL({
-    clientName: "google-web",
-    redirectURL: window.location.href,
-  });
+  // toggleTheme function works for both logged in & non-logged in users
+  const toggleTheme = async () => {
+    if (profile) {
+      await setTheme(profile.theme === 'dark' ? 'light' : 'dark');
+    } else {
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      setThemeState(newTheme);
+    }
+  };
+
+  // Sync document class based on local theme state
+  useEffect(() => {
+    if (!profile) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [theme, profile]);
+
+  // Generate current theme for rendering
+  const currentTheme = profile ? profile.theme : theme;
 
   return (
-    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-1 dark:bg-sage-1 ${profile?.theme === 'dark' ? 'dark' : ''}`}>
+    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-1 dark:bg-sage-1 ${currentTheme === 'dark' ? 'dark' : ''}`}>
       {/* Sidebar */}
       <div className="flex flex-col p-4 overflow-y-auto items-start w-full max-w-64 overflow-hidden">
         <div className="flex flex-row gap-4 justify-between w-full items-center">
           {/* Logo with label when signed in */}
           <div className="flex flex-row items-center gap-2">
-            <Logo style="small" className="my-2 ml-1" color={profile?.theme === 'dark' ? 'white' : 'black'}/>
-            {profile && (
+            <Logo style="small" className="my-2 ml-1" color={currentTheme === 'dark' ? 'white' : 'black'}/>
               <span className="text-xs text-sage-11 dark:text-sage-11">v1.0</span>
-            )}
           </div>
         </div>
 
@@ -135,29 +158,27 @@ export default function AppLayout({
             <div className="h-1 bg-teal-9 rounded-full absolute left-0" style={{ width: `${messageCount}%` }}></div>
           </div>
 
-          {user ? (
-            <>
-              <p className="text-xs text-sage-11 dark:text-sage-11 mt-4">Upgrade for higher limits</p>
-              <div className="flex flex-row gap-1 items-center mt-2">
-                <Link href={'/plans'} className="text-xs text-sage-12 font-medium">
-                  Upgrade Plan
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-xs text-sage-11 dark:text-sage-11 mt-4">Create Account for higher limits</p>
-            </>
-          )}
         </div>
 
         {/* Conversation List */}
         <div className="gap-2 flex flex-col w-full mt-4 flex-1 overflow-y-auto">
-          <div className="flex flex-row items-center justify-between gap-2 sticky top-0 bg-sage-2 dark:bg-sage-1 pb-2">
-            <p className="text-xs font-mono px-2 text-sage-11 dark:text-sage-11">Conversations</p>
-            <p className="text-xs font-mono px-2 text-sage-11 dark:text-sage-11">{conversations.length}</p>
-          </div>
-          <div className="flex flex-col w-full gap-px">
+          <Link
+            href="/files"
+            className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2 sticky top-0 bg-sage-2 dark:bg-sage-1 pb-2"
+          >
+            <Folder
+              size={16}
+              weight="bold"
+              className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+            />
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
+              Conversations
+            </span>
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11 ml-auto">
+              {conversations.length}
+            </span>
+          </Link>
+          {/* <div className="flex flex-col w-full gap-2">
             {conversations.map(conv => (
               <Link
                 key={conv.id}
@@ -172,43 +193,68 @@ export default function AppLayout({
                 {conv.name}
               </Link>
             ))}
-          </div>
+          </div> */}
         </div>
 
-        {/* Bottom Controls: Auth actions and external links */}
+        {/* Bottom Controls: Auth actions, Theme toggle and external links */}
         <div className="flex flex-col w-full mt-auto gap-4 py-4 border-t border-sage-4 dark:border-sage-5 pt-4">
+        {user ? (
+       <>
+<div className="flex flex-row gap-1 items-center mt-2">
+  <Link
+    href="/files"
+    className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+  >
+    <Folder
+      size={16}
+      weight="bold"
+      className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+    />
+    <span className="text-xs text-sage-11 dark:text-sage-11">
+      My Files
+    </span>
+  </Link>
+</div>
+
+       </>
+          ) : (
+            <>
+              <p className="text-xs text-sage-11 dark:text-sage-11 mt-4">Create Account for higher limits</p>
+            </>
+          )}
           <div className="flex flex-col gap-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+              aria-label={currentTheme === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme'}
+            >
+              {currentTheme === 'light' ? (
+                <>
+                  <MoonStars size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+                  <span className="text-xs text-sage-11 dark:text-sage-11">Switch to Dark Theme</span>
+                </>
+              ) : (
+                <>
+                  <Sun size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+                  <span className="text-xs text-sage-11 dark:text-sage-11">Switch to Light Theme</span>
+                </>
+              )}
+            </button>
             {profile ? (
-              <>
-                <button
-                  onClick={() => setTheme(profile.theme === 'dark' ? 'light' : 'dark')}
-                  className="p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
-                  aria-label={profile.theme === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme'}
-                >
-                  {profile.theme === 'light' ? (
-                    <>
-                      <MoonStars size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-                      <span className="text-xs text-sage-11 dark:text-sage-11">Switch to Dark Theme</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sun size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-                      <span className="text-xs text-sage-11 dark:text-sage-11">Switch to Light Theme</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={signOut}
-                  className="p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
-                >
-                  <SignOut size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
-                  <span className="text-xs text-sage-11 dark:text-sage-11">Sign Out</span>
-                </button>
-              </>
+              <button
+                onClick={signOut}
+                className="p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+              >
+                <SignOut size={16} weight="bold" className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300" />
+                <span className="text-xs text-sage-11 dark:text-sage-11">Sign Out</span>
+              </button>
             ) : (
               <div className="flex flex-row gap-2 items-center p-2">
                 <SignIn size={16} weight="bold" className="text-sage-12 transition-colors duration-300" />
-                <Link href={url} className="text-xs text-sage-12 font-medium">
+                <Link href={db.auth.createAuthorizationURL({
+                  clientName: "google-web",
+                  redirectURL: window.location.href,
+                })} className="text-xs text-sage-12 font-medium">
                   Sign in with Google
                 </Link>
               </div>
@@ -221,12 +267,7 @@ export default function AppLayout({
             </p>
             <ArrowRight size={12} weight="bold" className="text-sage-11 dark:text-sage-11 group-hover:text-sage-12 transition-colors duration-300" />
           </Link>
-          <Link href="https://x.com/nibezak" target="_blank" className="flex flex-row items-center gap-2 group">
-            <p className="text-xs font-mono px-2 text-sage-11 dark:text-sage-11 hover:text-sage-12 transition-colors duration-300">
-              Made by @nibezak
-            </p>
-            <ArrowRight size={12} weight="bold" className="text-sage-11 dark:text-sage-11 group-hover:text-sage-12 transition-colors duration-300" />
-          </Link>
+
         </div>
       </div>
 

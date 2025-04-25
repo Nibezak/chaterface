@@ -1,4 +1,4 @@
-# Ground 0
+# GROUND θ
 
 A modern chat interface for large language models.
 

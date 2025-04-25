@@ -71,7 +71,7 @@ const IntroductionModal: React.FC = () => {
 
               <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto py-4 pb-40 px-4">
                 <h1 className={`${lora.className} text-2xl font-semibold text-sage-1 relative z-10`}>Your Interface to Intelligence</h1>
-                <p className={`text-sm text-sage-5 relative z-10`}>Ground 0 is an AI learning platform for Visual and AUdio content.</p>
+                <p className={`text-sm text-sage-5 relative z-10`}>GROUND θ is an AI learning platform for Visual and AUdio content.</p>
               </div>
             </div>
 
@@ -96,7 +96,9 @@ const IntroductionModal: React.FC = () => {
               </div>
             </div>
             <center>
-               <Button size="small" href="#" className="mt-2 bg-sage-3 hover:bg-sage-4 text-sage-12 border border-sage-5" icon={<Code size={14} weight="bold" />}>Try it out</Button>
+               <Button onClick={closeModal} size="small" href="#" className="mt-2 bg-sage-3 hover:bg-sage-4 text-sage-12 border border-sage-5">
+                  Get Started
+               </Button>
             </center>
           </motion.div>
         </motion.div>
