@@ -2,7 +2,19 @@
 
 import Button from "@/components/button";
 import Logo from "@/components/logo";
-import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn, Folder, Users } from "@phosphor-icons/react";
+import {
+    Plus,
+    MoonStars,
+    Sun,
+    ArrowRight,
+    SignOut,
+    SignIn,
+    Folder,
+    Users,
+    ChartBar,
+    Code,
+    Gear
+} from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider";
 import { useDatabase } from "@/providers/database-provider";
 import { useEffect, useState, useCallback } from "react";
@@ -127,24 +139,24 @@ export default function AppLayout({
   const currentTheme = profile ? profile.theme : theme;
 
   return (
-    <div className={`flex flex-row h-dvh w-full overflow-hidden bg-sage-1 dark:bg-sage-1 ${currentTheme === 'dark' ? 'dark' : ''}`}>
+    <div className={` flex flex-row h-dvh w-full  overflow-hidden bg-sage-3 dark:bg-sage-3 ${currentTheme === 'dark' ? 'dark' : ''}`}>
       {/* Sidebar */}
       <div className="flex flex-col p-4 overflow-y-auto items-start w-full max-w-64 overflow-hidden">
         <div className="flex flex-row gap-4 justify-between w-full items-center">
           {/* Logo with label when signed in */}
           <div className="flex flex-row items-center gap-2">
-            <Logo style="small" className="my-2 ml-1" color={currentTheme === 'dark' ? 'white' : 'black'}/>
-              <span className="text-xs text-sage-11 dark:text-sage-11">v1.0</span>
+            <Logo style="small" className="my-2 ml-1" color={currentTheme === 'dark' ? 'white' : 'black'} />
+            <span className="text-xs text-sage-11 dark:text-sage-11">v1.0</span>
           </div>
         </div>
-         <Link
+        <Link
           href="/"
           className="mt-4 w-full bg-sage-3 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 rounded-md dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-6 dark:border-sage-6 flex items-center justify-center"
         >
-          <Plus size={16} weight="bold" />
-          <span className="ml-2">New Conversation</span>
+          <Plus size={12} weight="bold" />
+          <span className="ml-2 text-xs font-mono text-sage-11 dark:text-sage-11 p-2">New Conversation</span>
         </Link>
-        <div className="flex flex-col border bg-sage-1 dark:bg-sage-3 border-sage-4 dark:border-sage-5 rounded-md p-4 w-full mt-4">
+        <div className="flex flex-col border bg-sage-1 dark:bg-sage-1 border-sage-4 dark:border-sage-8 rounded-md p-4 w-full mt-4">
           <div className="flex flex-row gap-2 justify-between items-center">
             <p className="text-[10px] font-mono text-sage-11 dark:text-sage-11 uppercase">Usage </p>
             <p className="text-[10px] font-mono text-sage-11 dark:text-sage-11">
@@ -154,14 +166,13 @@ export default function AppLayout({
           <div className="relative h-1 w-full bg-sage-3 mt-2 dark:bg-sage-5 rounded-full">
             <div className="h-1 bg-teal-9 rounded-full absolute left-0" style={{ width: `${messageCount}%` }}></div>
           </div>
-
         </div>
 
         {/* Conversation List */}
         <div className="gap-2 flex flex-col w-full mt-4 flex-1 overflow-y-auto">
           <Link
             href="/files"
-            className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2 sticky top-0 bg-sage-2 dark:bg-sage-1 pb-2"
+            className="w-full p-2 border border-sage-4 dark:border-sage-7 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
           >
             <Folder
               size={16}
@@ -176,9 +187,9 @@ export default function AppLayout({
             </span>
           </Link>
 
-        <Link
+          <Link
             href="/communities"
-            className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+            className="w-full p-2 border border-sage-4 dark:border-sage-7 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
           >
             <Users
               size={16}
@@ -189,45 +200,57 @@ export default function AppLayout({
               Community
             </span>
           </Link>
-          {/* <div className="flex flex-col w-full gap-2">
-            {conversations.map(conv => (
-              <Link
-                key={conv.id}
-                href={`/conversations/${conv.id}`}
-                className={`text-sm px-2 py-1 rounded-md hover:bg-sage-3 dark:hover:bg-sage-4 duration-300 truncate ${
-                  conv.id === conversationId
-                    ? 'bg-sage-4 dark:bg-sage-5 font-medium text-sage-12 dark:text-sage-12'
-                    : 'text-sage-11 dark:text-sage-11'
-                }`}
-                title={conv.name}
-              >
-                {conv.name}
-              </Link>
-            ))}
-          </div> */}
+
+          {/* New Links */}
+          <Link
+            href="/usage"
+            className="w-full p-2 border border-sage-4 dark:border-sage-7 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+          >
+            <ChartBar
+              size={16}
+              weight="bold"
+              className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+            />
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
+              Usage
+            </span>
+          </Link>
+
+          <Link
+            href="/developer-api"
+            className="w-full p-2 border border-sage-4 dark:border-sage-7 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+          >
+            <Code
+              size={16}
+              weight="bold"
+              className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+            />
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
+              Developer API
+            </span>
+          </Link>
+
+          <Link
+            href="/settings"
+            className="w-full p-2 border border-sage-4 dark:border-sage-7 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+          >
+            <Gear
+              size={16}
+              weight="bold"
+              className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+            />
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
+              Settings
+            </span>
+          </Link>
         </div>
 
         {/* Bottom Controls: Auth actions, Theme toggle and external links */}
         <div className="flex flex-col w-full mt-auto gap-4 py-4 border-t border-sage-4 dark:border-sage-5 pt-4">
-        {user ? (
-       <>
-{/* <div className="flex flex-row gap-1 items-center mt-2">
-  <Link
-    href="/files"
-    className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
-  >
-    <Folder
-      size={16}
-      weight="bold"
-      className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
-    />
-    <span className="text-xs text-sage-11 dark:text-sage-11">
-      My Files
-    </span>
-  </Link>
-</div> */}
-
-       </>
+          {user ? (
+            <>
+              {/* Authenticated User Content */}
+            </>
           ) : (
             <>
               <p className="text-xs text-sage-11 dark:text-sage-11 mt-4">Create Account for higher limits</p>
