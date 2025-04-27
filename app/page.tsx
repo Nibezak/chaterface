@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useDatabase } from "@/providers/database-provider";
 import { useKey } from "@/providers/key-provider";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
 import { id, InstaQLEntity } from "@instantdb/react";
 import Button from "@/components/button";
@@ -32,15 +32,13 @@ export default function Home() {
   const router = useRouter();
   const { user, sessionId } = useAuth();
   const [content, setContent] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false); // Changed from isStreaming for clarity
+  const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { getProviderKey } = useKey();
   const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-4.1-nano');
-
   const [dbMessages, setDbMessages] = useState<Message[]>([]);
-
   const conversationIdRef = useRef<string>('');
 
   const { data } = db.useQuery({
@@ -57,11 +55,11 @@ export default function Home() {
   });
 
   useEffect(() => {
-    if(conversationId && data && !data?.conversations[0]){
-      setDbMessages(data?.conversations[0]?.messages ?? []);
+    if (conversationId && data && data.conversations[0]) {
+      setDbMessages(data.conversations[0].messages ?? []);
     }
-  }, [data]);
-  
+  }, [data, conversationId]);
+
   const { messages, input, handleInputChange, append, setInput, status } = useChat({
     api: '/api/chat',
     headers: {
@@ -79,23 +77,19 @@ export default function Home() {
     onFinish: async (message) => {
       setIsProcessing(false);
       const aiMessageId = id();
-      const currentConversationId = conversationIdRef.current; // Get the latest value
-
-      if(currentConversationId){ // Check using the ref's value
+      const currentConversationId = conversationIdRef.current;
+      if (currentConversationId) {
         await db.transact(db.tx.messages[aiMessageId].ruleParams({ sessionId: sessionId }).update({
           content: message.content,
           role: "assistant",
           createdAt: DateTime.now().toISO(),
           model: selectedModel
-        }).link({ conversation: currentConversationId })); // Use the ref's value
+        }).link({ conversation: currentConversationId }));
       } else {
-         console.error("onFinish executed but conversationIdRef.current was empty.");
-         // Optionally handle this error case, though it shouldn't happen if createMessage runs first
+        console.error("onFinish executed but conversationIdRef.current was empty.");
       }
     }
   });
-
-  // const { newConversationMessage, setNewConversationMessage, setNewConversationId } = useNewConversation();
 
   // Get the current provider from the selected model
   const currentProvider = selectedModel.split('/')[0] as keyof typeof providerKeys;
@@ -110,26 +104,23 @@ export default function Home() {
   async function createMessage(content: string) {
     setIsProcessing(true);
     setErrorMessage(null);
-
-    if(!conversationId){
+    if (!conversationId) {
       const generatedNewConversationId = id();
       setConversationId(generatedNewConversationId);
       conversationIdRef.current = generatedNewConversationId;
-
-      // create conversation
+      // Create conversation
       await db.transact(db.tx.conversations[generatedNewConversationId].update({
         createdAt: DateTime.now().toISO(),
         name: content.slice(0, 20).trim(),
         sessionId: sessionId ?? ''
       }));
-
       await db.transact(db.tx.messages[id()].ruleParams({ sessionId: sessionId }).update({
         content: content,
         role: "user",
         createdAt: DateTime.now().toISO(),
         model: selectedModel
       }).link({ conversation: generatedNewConversationId }));
-    }else{
+    } else {
       await db.transact(db.tx.messages[id()].ruleParams({ sessionId: sessionId }).update({
         content: content,
         role: "user",
@@ -137,7 +128,6 @@ export default function Home() {
         model: selectedModel
       }).link({ conversation: conversationId }));
     }
-
     append({
       role: "user",
       content: content,
@@ -146,34 +136,35 @@ export default function Home() {
         text: content
       }]
     });
-
     setInput('');
   }
 
   return (
-    <div className="w-full h-screen flex flex-col relative items-center justify-center">
+    <div className="flex flex-col w-full h-full mx-auto relative">
+      <div className="flex-1 h-full flex items-center justify-center">
 
-      {!user && (
-        <IntroductionModal />
-      )}
-
-      {conversationId ? (
-        <div className="flex flex-col w-full h-full">
-          <div className="flex-1 overflow-y-auto pt-24 h-full">
-            <MessageList messages={messages} messagesOnDB={data?.conversations[0]?.messages ?? []} />
-          </div>
-        </div>
-      ) : (
-        <div className="overflow-y-auto px-4 pt-6 flex items-center justify-center">
-          <div className="text-center">
+          <div className="flex flex-col h-full justify-between items-center">
+            <div className="flex-grow flex flex-col items-center justify-center text-center">
               <h2 className="text-xl font-medium text-sage-12">What's on your mind?</h2>
-              <p className="text-sage-11 text-sm font-mono mt-1">Send a message to start a new conversation.</p>
+              <p className="text-sage-11 text-sm font-mono mt-1">
+                I can generate stories and podcasts for your ideas.
+              </p>
+            </div>
+            <div className="w-full flex justify-center mb-4">
+              <NewMessageInput 
+                input={input}
+                handleInputChange={handleInputChange}
+                createMessage={createMessage}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                isProcessing={isProcessing}
+                errorMessage={errorMessage}
+                setInput={setInput}
+              />
+            </div>
           </div>
-        </div>
-      )}
 
-      
-      <NewMessageInput input={input} handleInputChange={handleInputChange} createMessage={createMessage} selectedModel={selectedModel} setSelectedModel={setSelectedModel} onHomepage={conversationId ? false : true} isProcessing={isProcessing} errorMessage={errorMessage} setInput={setInput} />
+      </div>
     </div>
   );
 }

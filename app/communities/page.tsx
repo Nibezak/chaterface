@@ -14,7 +14,7 @@ type Conversation = {
   // add additional fields as needed
 };
 
-export default function Files() {
+export default function Communities() {
   const { user, sessionId, db } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -61,7 +61,7 @@ export default function Files() {
 
   if (isDarkMode) {
     return (
-      <div className="p-8 h-screen overflow-y-auto no-scrollbar grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 bg-black/10 backdrop-blur-xs">
+      <div className="p-8 h-screen overflow-y-auto no-scrollbar grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 bg-black/20 backdrop-blur-sm">
         {conversations.map(conv => (
           <Link
             key={conv.id}
@@ -94,53 +94,13 @@ export default function Files() {
               className="w-full flex items-center justify-center bg-black/10 hover:bg-black/20 text-white"
             >
               <Play size={16} weight="bold" className="mr-1" />
-              Dark Play
-            </Button>
-          </Link>
-        ))}
-      </div>
-    );
-  } else {
-    return (
-      <div className="p-8 h-screen overflow-y-auto no-scrollbar grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 bg-white/20 backdrop-blur-sm">
-        {conversations.map(conv => (
-          <Link
-            key={conv.id}
-            href={`/conversations/${conv.id}`}
-            className={cn(
-              'group w-full max-w-sm rounded-2xl p-4 shadow-lg',
-              'bg-white/20 backdrop-blur-sm'
-            )}
-          >
-            <div
-              className="relative overflow-hidden rounded-xl shadow-inner mb-3"
-              style={{ width: '100%', height: '180px' }}
-            >
-              <img
-                src={`https://picsum.photos/seed/${conv.id}/600/400`}
-                alt={conv.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white/40 pointer-events-none" />
-            </div>
-            <h6 className="mb-1 font-semibold text-black text-xl tracking-tight transition-all group-hover:scale-95">
-              {conv.name}
-            </h6>
-            <p className="mb-3 text-sm text-black">
-              Conversation details go here.
-            </p>
-            <Button
-              onClick={() => console.log(`Play card ${conv.id}`)}
-              size="small"
-              className="w-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-black border border-white/30"
-            >
-              <Play size={16} weight="bold" className="mr-1" />
               Play
             </Button>
           </Link>
         ))}
       </div>
     );
+  } 
   }
-}
+
 

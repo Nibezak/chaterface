@@ -2,7 +2,7 @@
 
 import Button from "@/components/button";
 import Logo from "@/components/logo";
-import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn, Folder } from "@phosphor-icons/react";
+import { Plus, MoonStars, Sun, ArrowRight, SignOut, SignIn, Folder, Users } from "@phosphor-icons/react";
 import { useAuth } from "@/providers/auth-provider";
 import { useDatabase } from "@/providers/database-provider";
 import { useEffect, useState, useCallback } from "react";
@@ -137,16 +137,13 @@ export default function AppLayout({
               <span className="text-xs text-sage-11 dark:text-sage-11">v1.0</span>
           </div>
         </div>
-
-        <Button
-          onClick={createConversationAndRedirect}
-          size="small"
-          className="mt-4 w-full bg-sage-3 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-6 dark:border-sage-6"
-          icon={<Plus size={16} weight="bold" />}
+         <Link
+          href="/"
+          className="mt-4 w-full bg-sage-3 text-sage-11 hover:bg-sage-4 dark:bg-sage-3 rounded-md dark:text-sage-11 dark:hover:bg-sage-4 duration-300 border border-sage-6 dark:border-sage-6 flex items-center justify-center"
         >
-          New Conversation
-        </Button>
-
+          <Plus size={16} weight="bold" />
+          <span className="ml-2">New Conversation</span>
+        </Link>
         <div className="flex flex-col border bg-sage-1 dark:bg-sage-3 border-sage-4 dark:border-sage-5 rounded-md p-4 w-full mt-4">
           <div className="flex flex-row gap-2 justify-between items-center">
             <p className="text-[10px] font-mono text-sage-11 dark:text-sage-11 uppercase">Usage </p>
@@ -172,10 +169,24 @@ export default function AppLayout({
               className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
             />
             <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
-              Conversations
+              My documents 
             </span>
             <span className="text-xs font-mono text-sage-11 dark:text-sage-11 ml-auto">
               {conversations.length}
+            </span>
+          </Link>
+
+        <Link
+            href="/communities"
+            className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
+          >
+            <Users
+              size={16}
+              weight="bold"
+              className="text-sage-10 group-hover:text-sage-12 dark:text-sage-9 dark:group-hover:text-sage-11 transition-colors duration-300"
+            />
+            <span className="text-xs font-mono text-sage-11 dark:text-sage-11">
+              Community
             </span>
           </Link>
           {/* <div className="flex flex-col w-full gap-2">
@@ -200,7 +211,7 @@ export default function AppLayout({
         <div className="flex flex-col w-full mt-auto gap-4 py-4 border-t border-sage-4 dark:border-sage-5 pt-4">
         {user ? (
        <>
-<div className="flex flex-row gap-1 items-center mt-2">
+{/* <div className="flex flex-row gap-1 items-center mt-2">
   <Link
     href="/files"
     className="w-full p-2 hover:bg-sage-3 dark:hover:bg-sage-4 rounded-md group transition-colors duration-300 flex items-center gap-2"
@@ -214,7 +225,7 @@ export default function AppLayout({
       My Files
     </span>
   </Link>
-</div>
+</div> */}
 
        </>
           ) : (

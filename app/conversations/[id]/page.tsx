@@ -18,6 +18,7 @@ import { useAuth } from "@/providers/auth-provider";
 type Conversation = InstaQLEntity<AppSchema, "conversations">;
 type Message = InstaQLEntity<AppSchema, "messages">;
 import { useRouter } from "next/navigation";
+import MediaThemeSutro from "player.style/sutro/react";
 
 export default function ConversationPage() {
   const params = useParams();
@@ -113,23 +114,41 @@ export default function ConversationPage() {
       }]
     });
   }
-
   return (
     <div className="flex flex-col w-full h-full mx-auto relative">
-      <div className="flex-1 overflow-y-auto pt-24 h-full">
-        <MessageList messages={messages} messagesOnDB={data?.conversations[0]?.messages ?? []} />
+      <div className="flex-1 h-full flex items-center justify-center">
+        {data?.conversations[0]?.messages && data.conversations[0].messages.length === 0 ? (
+          <div className="flex flex-col h-full justify-between items-center">
+            <div className="flex-grow flex flex-col items-center justify-center text-center">
+              <h2 className="text-xl font-medium text-sage-12">What's on your mind?</h2>
+              <p className="text-sage-11 text-sm font-mono mt-1">
+                I can generate stories and podcasts for your ideas.
+              </p>
+            </div>
+            <div className="w-full flex justify-center mb-4">
+              <NewMessageInput 
+                input={input}
+                handleInputChange={handleInputChange}
+                createMessage={createMessage}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                isProcessing={isProcessing}
+                errorMessage={errorMessage}
+                setInput={setInput}
+              />
+            </div>
+          </div>
+        ) : (
+          <MediaThemeSutro style={{width: "100%"}}>
+            <video
+              slot="media"
+              src="https://stream.mux.com/fXNzVtmtWuyz00xnSrJg4OJH6PyNo6D02UzmgeKGkP5YQ/high.mp4"
+              playsInline
+              crossOrigin="anonymous"
+            ></video>
+          </MediaThemeSutro>
+        )}
       </div>
-
-      <NewMessageInput 
-        input={input}
-        handleInputChange={handleInputChange}
-        createMessage={createMessage}
-        selectedModel={selectedModel}
-        setSelectedModel={setSelectedModel}
-        isProcessing={isProcessing}
-        errorMessage={errorMessage}
-        setInput={setInput}
-      />
     </div>
   );
 }
