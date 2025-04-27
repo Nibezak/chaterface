@@ -68,7 +68,7 @@ export default function Communities() {
   if (isDarkMode) {
     return (
       <div className="p-4 h-screen overflow-y-auto no-scrollbar bg-sage-3">
-        <div className="mb-4 sticky top-0 z-10 mx-auto w-1/3 px-1 bg-sage-3">
+        <div className="mb-4 sticky top-0 z-10 mx-auto w-1/3 px-1">
           <div className="relative flex items-center">
             <MagnifyingGlass size={20} weight="bold" className="absolute left-3 text-sage-11 dark:text-sage-11" />
             <input
